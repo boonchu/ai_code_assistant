@@ -1,0 +1,26 @@
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore build artifacts
+dist/
+build/
+
+# Ignore TypeScript declaration files
+*.d.ts
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+
+# Ignore editor-specific settings
+vscode/
+idea/
+
+# Ignore test coverage reports
+coverage/
+
+# Ignore npm lock files (optional)
+package-lock.json
+yarn.lock
