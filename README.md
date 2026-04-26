@@ -184,3 +184,8 @@ WHERE
             E.name = 'Local Music Festival'
     );
 ```
+
+##### Use OpenCode to assist me to create `Tic-Tac-Toe` React app.
+```
+npm start
+```
