@@ -21,6 +21,13 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-
+  mointor:
+    image: ghcr.io/psalias2006/gpu-hot:latest
+    container_name: mointor
+    ports:
+      - "1312:1312"
+    depends_on:
+      - ollama
+      
 volumes:
   ollama_data:
