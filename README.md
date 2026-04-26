@@ -185,7 +185,8 @@ WHERE
     );
 ```
 
-##### Use OpenCode to assist me to create `Tic-Tac-Toe` React app.
+#### Use OpenCode to assist me to create `Tic-Tac-Toe` React app.
 ```
 npm start
 ```
+![Tic-Tac-Toe](Tic-Tac-Toe.png)
