@@ -7,7 +7,7 @@ const DB_PATH = './tickets.db';
 /**
  * Main function to initialize the database and set up all necessary schemas.
  */
-export const startDatabase = async (): Promise<void> => {
+export const setupDatabase = async (): Promise<void> => {
     console.log('==============================================================');
     console.log('🚀 setup Tickets Database...');
     console.log('==============================================================');
@@ -46,7 +46,7 @@ export const startDatabase = async (): Promise<void> => {
 // Standard execution block for running the script directly
 (async () => {
     try {
-        await startDatabase();
+        await setupDatabase();
     } catch (e) {
         console.log('==============================================================');
         console.log('🛑 Application terminated with a critical error.');
