@@ -78,11 +78,11 @@ services:
       --model-url http://127.0.0.1:12434/engines/v1
       --host 0.0.0.0
       --port 8080
-      --n-gpu-layers 999
-      --reasoning-budget 2048
+      --n-gpu-layers 99
+      --reasoning-budget 4096
       --reasoning-budget-message "... thinking budget exceeded, let's answer now."
       --n-predict 4096
-      --ctx-size 8192
+      --ctx-size 65536
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   mointor:
     image: ghcr.io/psalias2006/gpu-hot:latest
