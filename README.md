@@ -53,6 +53,25 @@ Architecture: gemma4
 Parameters:   7.52B
 Size:         4.74GiB
 Quantization: MOSTLY_Q4_K_M
+
+curl http://localhost:12434/v1/models -s | jq
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "docker.io/ai/gemma4:E4B",
+      "object": "model",
+      "created": 1775663044,
+      "owned_by": "docker",
+      "dmr": {
+        "architecture": "gemma4",
+        "parameters": "7.52B",
+        "quantization": "MOSTLY_Q4_K_M",
+        "size": "4.74GiB"
+      }
+    }
+  ]
+}
 ```
 - Review docker image types [here](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md) llama.cpp. When you can see nvidia-smi with good output, then environment setup has no issue.
 ```
@@ -82,6 +101,10 @@ docker build -t local/llama.cpp:server-cuda12 --target server -f .devops/cuda.Do
 - Type this Prompt `Generate an SVG of a pelican riding a bicycle`
 - Dump SVG in vscode to see what image look like.
 - Tune Llama.CPP in docker-compose.yml to get image better natually.
+
+#### Testing with Opencode
+- Setup with `npm install -g opencode-ai@latest`
+- Copy `./configs/opencode.json` to `~/.config/opencode/opencode.json`. See this [link](https://docs.docker.com/guides/opencode-model-runner/) for details.
 
 #### Pairing with AI
 
