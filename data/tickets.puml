@@ -1,0 +1,42 @@
+@startuml
+!theme cerulean
+
+title Music Festival Database Schema
+
+entity Users {
+    * user_id : INTEGER <<PK>>
+    --
+    username : TEXT {unique}
+    email : TEXT {unique}
+    password_hash : TEXT
+    created_at : DATETIME
+}
+
+entity Events {
+    * event_id : INTEGER <<PK>>
+    --
+    name : TEXT
+    description : TEXT
+    event_date : TEXT
+    venue : TEXT
+    capacity : INTEGER
+}
+
+entity Tickets {
+    * ticket_id : INTEGER <<PK>>
+    --
+    user_id : INTEGER <<FK>>
+    event_id : INTEGER <<FK>>
+    purchase_date : DATETIME
+    seat_number : TEXT
+}
+
+' Relationships
+Users "1" --o "0..*" Tickets : buys tickets >
+Events "1" --o "0..*" Tickets : has tickets for >
+
+' Explicitly defining the foreign key constraints for clarity
+Users ||--o{ Tickets : user_id
+Events ||--o{ Tickets : event_id
+
+@enduml
