@@ -2,7 +2,7 @@
 
 ```
 # create database with defined schema in code.
-npx tsx src/startDatabase.ts
+npx tsx src/setupDatabase.ts
 
 # export schema
 sqlite3 tickets.db .schema

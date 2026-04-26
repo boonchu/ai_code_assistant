@@ -2,7 +2,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "startdb": "npx ts-node startDatabase.ts"
+    "setupdb": "npx ts-node setupDatabase.ts"
   },
   "author": "",
   "type": "module",
