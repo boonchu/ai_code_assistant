@@ -5,9 +5,14 @@ Setup:
 - Tested with 12GB RTX-4070
 - Can monitor GPU when docker services started, http://localhost:1312
 - Chat with AI for couple hours to let assistant to write typescript codes
-    * Can connect to database
-    * Bootstrap the new database and push schema changes if any
+    * Ask for new tickets system schema
+    * Help on Plant UML for schema diagram
+    * Setup typescript project (needs human to guide this one)
+    * Can connect to database 
+    * Bootstrap the new database and push schema changes with typescript code (node human as well)
     * Search tickets and users information from dataset
+    * Contain code bug that query resultset from sqlite3 and AI cannot find good answer
+    * "MUST" commit git every time before AI made code changes. Otherwise lost all codes since AI can wipe out 30-50% original codes.
 
 #### How to use sqlite3
 
