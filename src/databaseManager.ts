@@ -45,13 +45,17 @@ export const query = async <T>(sql: string, params: any[] = []): Promise<T> => {
 `);
 
     return new Promise((resolve, reject) => {
-        try {
-            const rows = db.all(sql, params);
+        // Problem:  it will not contain the actual data rows because the data arrives later via the callback.
+        // Solution: Use the callback signature of db.all() instead of assigning the result.
+        db.all(sql, params, (err: Error | null, rows: any[]) => {
+            if (err) {
+                console.error("🚨 SQL EXECUTION ERROR:", err);
+                reject(err);
+                return;
+            }
+            // Resolve with the 'rows' array provided by the callback
             resolve(rows as unknown as T);
-        } catch (error) {
-            console.error("🚨 SQL EXECUTION ERROR:", error);
-            reject(error);
-        }
+        });
     });
 }
 
