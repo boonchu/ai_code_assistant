@@ -1,4 +1,15 @@
-### How to use sqlite3
+#### Spending weekends to explore how AI assist me coding...
+
+Setup:
+- Apply `continue` extension from vscode and have settings to use gemma4:latest
+- Tested with 12GB RTX-4070
+- Can monitor GPU when docker services started, http://localhost:1312
+- Chat with AI for couple hours to let assistant to write typescript codes
+    * Can connect to database
+    * Bootstrap the new database and push schema changes if any
+    * Search tickets and users information from dataset
+
+#### How to use sqlite3
 
 * setup database
 
