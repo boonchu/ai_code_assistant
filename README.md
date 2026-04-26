@@ -3,7 +3,8 @@
 #### Setup
 - Use Linux WSL2 on Windows
 - Ensure to have GPU, project has tested with 12GB RTX-4070
-- Apply `continue` extension from vscode and have settings to use gemma4:latest
+- Apply `Continue` or `Cline` extension from vscode and have settings to use gemma4:E4B
+    - `Continue` is better since it pass through my prompt to service.
 - Can monitor GPU when docker services started, http://localhost:1312
 - Ensure [Nvidia Tool Kit](https://oneuptime.com/blog/post/2026-01-16-docker-nvidia-gpu-ai-ml/view#ubuntu-debian) installed
 ```
@@ -75,6 +76,12 @@ docker run --gpus 1 ghcr.io/ggml-org/llama.cpp:server-cuda --port 8080 --host 0.
 git clone https://github.com/ggml-org/llama.cpp.git
 docker build -t local/llama.cpp:server-cuda12 --target server -f .devops/cuda.Dockerfile .
 ```
+
+#### You can help to improve LLM with challenge in this project, ['Pelicans on a bicycle'](https://github.com/simonw/pelican-bicycle#pelicans-on-a-bicycle)
+- Access http://localhost:8080/
+- Type this Prompt `Generate an SVG of a pelican riding a bicycle`
+- Dump SVG in vscode to see what image look like.
+- Tune Llama.CPP in docker-compose.yml to get image better natually.
 
 #### Pairing with AI
 
