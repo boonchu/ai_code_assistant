@@ -12,6 +12,7 @@ Setup:
 #### How to use sqlite3
 
 * schema design
+
 ![Schema Diagram](schema.png)
 
 * setup database

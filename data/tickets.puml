@@ -1,7 +1,7 @@
 @startuml
 !theme cerulean
 
-title Music Festival Database Schema
+title Tickets System Database Schema
 
 entity Users {
     * user_id : INTEGER <<PK>>
