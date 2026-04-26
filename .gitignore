@@ -24,3 +24,5 @@ coverage/
 # Ignore npm lock files (optional)
 package-lock.json
 yarn.lock
+
+llama.cpp/
