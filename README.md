@@ -11,7 +11,7 @@ Setup:
     * Can connect to database 
     * Bootstrap the new database and push schema changes with typescript code (node human as well)
     * Search tickets and users information from dataset
-    * ~~Contain code bug that query resultset from sqlite3 and AI cannot find good answer~~  Fix in this commit 9dbb299
+    * ~~Contain code bug that query resultset from sqlite3 and AI cannot find good answer~~  Fix in [this commit](https://github.com/boonchu/ai_code_assistant/commit/66bb8647560abfee685823f58f86125eeed2a374)
     * "MUST" commit git every time before AI made code changes. Otherwise lost all codes since AI can wipe out 30-50% original codes.
 
 #### How to use sqlite3
