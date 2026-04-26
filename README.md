@@ -36,7 +36,13 @@ docker model version
 ```
 docker model pull ai/gemma4:E4B
 
+docker model list
+
+MODEL NAME  PARAMETERS  QUANTIZATION   ARCHITECTURE  MODEL ID      CREATED      CONTEXT  SIZE
+gemma4:E4B  7.52B       MOSTLY_Q4_K_M  gemma4        1163f19dcd97  2 weeks ago           4.74GiB
+
 docker model show gemma4:E4B | head -10
+
 Model:       sha256:1163f19dcd973b865c35d8e1a2c03736f4eb0a98c71e2b4425b7f84d183a423f
 Tags:        docker.io/ai/gemma4:E4B
 Created:     2026-04-08T08:44:04-07:00
@@ -47,14 +53,8 @@ Parameters:   7.52B
 Size:         4.74GiB
 Quantization: MOSTLY_Q4_K_M
 ```
-- Review docker image types [here](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md) llama.cpp. It does not work for me since docker run returns 139 error code. If you can see nvidia-smi with good output, then image has issue.
+- Review docker image types [here](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md) llama.cpp. When you can see nvidia-smi with good output, then environment setup has no issue.
 ```
-docker run --gpus 1 ghcr.io/ggml-org/llama.cpp
-:server-cuda13 /app/llama-server --port 8080 --host 0.0.0.0 -n 512 --n-gpu-layers 1 --docker-repo ai/gemma4:
-E4B --debug
-echo $?
-139
-
 docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
 +-----------------------------------------------------------------------------------------+
 | NVIDIA-SMI 595.58.04              Driver Version: 596.21         CUDA Version: 13.2     |
@@ -67,6 +67,8 @@ docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
 |  0%   36C    P8              5W /  200W |    1210MiB /  12282MiB |      1%      Default |
 |                                         |                        |                  N/A |
 +-----------------------------------------+------------------------+----------------------+
+
+docker run --gpus 1 ghcr.io/ggml-org/llama.cpp:server-cuda --port 8080 --host 0.0.0.0 -n 512 --n-gpu-layers 1 --docker-repo ai/gemma4:E4B
 ```
 - [How to build it locally](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md#building-docker-locally) 
 ```

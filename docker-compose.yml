@@ -49,7 +49,9 @@ services:
   #             capabilities: [gpu]
   # 2. Runs llama.cpp server with the downloaded model
   llama-cpp:
-    image: ghcr.io/ggml-org/llama.cpp:server-cuda13
+    # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
+    # image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    image: local/llama.cpp:server-cuda13
     container_name: llama-cpp
     depends_on:
       model-download:
@@ -73,6 +75,7 @@ services:
     # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
     command: >
       --docker-repo ai/gemma4:E4B
+      --model-url http://127.0.0.1:12434/engines/v1
       --host 0.0.0.0
       --port 8080
       --n-gpu-layers 35
