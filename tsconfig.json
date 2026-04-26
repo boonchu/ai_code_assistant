@@ -1,17 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "nodenext",
-    "moduleResolution": "nodeNext",
-    "lib": [
-      "es2022",
-      "dom"
+    // other options
+    "types": [
+      "node"
     ],
+    "target": "es2018",
+    "rootDir": "./src", /* Specify the root directory of input files */
+    "outDir": "./dist", /* Specify the output directory for compiled JavaScript files */
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -20,6 +18,14 @@
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force"
-  }
+    "moduleDetection": "force",
+    "forceConsistentCasingInFileNames": true, /* Ensure consistent casing */
+  },
+  "include": [
+    "src/**/*.ts" /* Include all TypeScript files in the src directory and its subdirectories */
+  ],
+  "exclude": [
+    "node_modules", /* Exclude node_modules */
+    "dist" /* Exclude the output directory */
+  ]
 }

@@ -1,9 +1,9 @@
-import { open, Database } from 'sqlite'; // Assuming you use the wrapper for async/await
-
+import sqlite3 from 'sqlite3';
 /**
  * Global variable to hold the initialized database connection object.
+ * This will now hold the better-sqlite3 instance.
  */
-let db: Database | null = null;
+let db: sqlite3.Database;
 
 /**
  * Initializes the connection to the SQLite database using the provided path.
@@ -18,7 +18,8 @@ export async function initializeDatabase(dbPath: string): Promise<void> {
 
     console.log(`Attempting to open database connection at: ${dbPath}`);
     try {
-        db = await open({ filename: dbPath, driver: Database });
+        // better-sqlite3 opens synchronously, so we wrap it in a Promise
+        db = new sqlite3.Database(dbPath);
         console.log("✅ Database connection established successfully.");
     } catch (error) {
         console.error("❌ ERROR: Could not connect to the database at", dbPath, error);
@@ -28,10 +29,10 @@ export async function initializeDatabase(dbPath: string): Promise<void> {
 
 /**
  * The core query function exported for schema setup and operations. 
- * This wraps the sqlite3 connection to execute SQL statements safely.
+ * This wraps the better-sqlite3 connection to execute SQL statements safely.
  * @param sql The SQL query string.
  * @param params An array of parameters for the query.
- * @returns A Promise resolving with the query result.
+ * @returns A Promise resolving with the query result (Array of rows).
  */
 export const query = async <T>(sql: string, params: any[] = []): Promise<T> => {
     if (!db) {
@@ -43,22 +44,30 @@ export const query = async <T>(sql: string, params: any[] = []): Promise<T> => {
   Params: ${JSON.stringify(params)}
 `);
 
-    try {
-        const result = await db.all(sql, params);
-        return result as unknown as T;
-    } catch (error) {
-        console.error("🚨 SQL EXECUTION ERROR:", error);
-        throw error;
-    }
-};
+    return new Promise((resolve, reject) => {
+        try {
+            const rows = db.all(sql, params);
+            resolve(rows as unknown as T);
+        } catch (error) {
+            console.error("🚨 SQL EXECUTION ERROR:", error);
+            reject(error);
+        }
+    });
+}
 
 /**
  * Closes the database connection when the application shuts down.
  */
 export const closeDatabase = async (): Promise<void> => {
     if (db) {
-        await db.close();
-        db = null;
-        console.log("🚪 Database connection closed.");
+        try {
+            // better-sqlite3 uses a synchronous close method
+            db.close();
+            console.log("🚪 Database connection closed.");
+        } catch (error) {
+            console.error("Error closing database:", error);
+            throw error;
+        }
     }
+    return Promise.resolve();
 }
