@@ -3,26 +3,23 @@
   "provider": {
     "llama.cpp": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "llama.cpp (local)",
-      "options": {
-        "baseURL": "http://127.0.0.1:8080/v1",
-        "toolParser": [
-          { "type": "raw-function-call" },
-          { "type": "json" }
-        ]
-      }
-    },
-   "docker-runner": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Docker Model Runner",
-      "options": {
-        "baseURL": "http://localhost:12434/v1"
-      },
+      "name": "LLAMA.CPP (local)",
       "models": {
         "gemma4:E4B": {
           "name": "ai/gemma4:E4B"
         }
+      },
+      "options": {
+        "baseURL": "http://127.0.0.1:8080/v1",
+        "toolParser": [
+          {
+            "type": "raw-function-call"
+          },
+          {
+            "type": "json"
+          }
+        ]
       }
-   } 
+    }
   }
 }

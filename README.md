@@ -100,6 +100,8 @@ $ docker build -t llmfit-tui-image . && docker run --gpus all -it llmfit-tui-ima
 #### Testing with Opencode
 - Setup with `npm install -g opencode-ai@latest`
 - Copy `./configs/opencode.json` to `~/.config/opencode/opencode.json`. See this [link](https://docs.docker.com/guides/opencode-model-runner/) for details.
+- Launch opencode and use Ctrl+p to enable prompt and use '/connect' to find LLAMA.CPP (local) in the list, also add ai/gemma4:E4B model.
+- Optionally, try with `opencode serve` and open http://127.0.0.1:4096
 
 #### Pairing with AI
 - Chat with AI for couple hours to let assistant to write typescript codes
