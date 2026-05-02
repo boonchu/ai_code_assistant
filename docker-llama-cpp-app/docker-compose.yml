@@ -1,0 +1,86 @@
+services:
+  # 0. Must have a GPU available to run the model, so we check for that first
+  gpu-check:
+    image: nvidia/cuda:13.0.2-devel-ubuntu24.04
+    container_name: gpu-check
+    command: >
+      sh -c "if command -v nvidia-smi > /dev/null 2>&1 && nvidia-smi --query --display=COMPUTE > /dev/null 2>&1; then
+        return 0
+      else
+        return 1
+      fi"
+    deploy:
+      resources:
+        limits:
+          memory: 2G      # Hard limit: Container will be killed if exceeded
+        reservations:
+          memory: 2G      # Soft limit: Minimum memory guaranteed to the container
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  # 2. Runs llama.cpp server with the downloaded model
+  llama-cpp:
+    # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
+    # image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    image: local/llama.cpp:server-cuda13
+    container_name: llama-cpp
+    # depends_on:
+    #   model-download:
+    #     condition: service_completed_successfully
+    volumes:
+      # Maps a local folder named 'llama_cache' to the container's cache path
+      - ./llama_cache:/root/.cache/llama.cpp
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 4G      # Hard limit: Container will be killed if exceeded
+        reservations:
+          memory: 4G      # Soft limit: Minimum memory guaranteed to the container
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # extra_hosts:
+    #   # Makes host.docker.internal work on Linux too
+    #   - "host.docker.internal:host-gateway"
+    # how to use --docker-repo, --host, --port, and --n-gpu-layers flags to run the server with the downloaded model
+    # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
+    # --model-url http://host.docker.internal:12434/engines/v1
+    command: >
+      --docker-repo ai/gemma4:E4B
+      --host 0.0.0.0
+      --port 8080
+      --n-gpu-layers 99
+      --reasoning-budget 4096
+      --reasoning-budget-message "... thinking budget exceeded, let's answer now."
+      --n-predict 4096
+      --ctx-size 65536
+      --slot-save-path /root/.cache/llama.cpp/slots 
+  # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
+  mointor:
+    image: ghcr.io/psalias2006/gpu-hot:latest
+    container_name: mointor
+    ports:
+      - "1312:1312"
+    depends_on:
+      llama-cpp:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 512M      # Hard limit: Container will be killed if exceeded
+        reservations:
+          memory: 512M      # Soft limit: Minimum memory guaranteed to the container
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

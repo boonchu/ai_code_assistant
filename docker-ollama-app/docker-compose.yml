@@ -1,0 +1,66 @@
+services:
+  # 1. Must have a GPU available to run the model, so we check for that first
+  gpu-check:
+    image: nvidia/cuda:13.0.2-devel-ubuntu24.04
+    container_name: gpu-check
+    command: >
+      sh -c "if command -v nvidia-smi > /dev/null 2>&1 && nvidia-smi --query --display=COMPUTE > /dev/null 2>&1; then
+        return 0
+      else
+        return 1
+      fi"
+    deploy:
+      resources:
+        limits:
+          memory: 2G      # Hard limit: Container will be killed if exceeded
+        reservations:
+          memory: 2G      # Soft limit: Minimum memory guaranteed to the container
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  # 2. Runs Ollama server to serve the model (optional, can be replaced with llama.cpp directly)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Override command to pull the model on startup
+    entrypoint: /bin/sh
+    command: >
+      -c "ollama serve & 
+          sleep 5; 
+          ollama pull gemma4; 
+          wait"
+    # GPU support (optional but recommended for Gemma 4)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
+  mointor:
+    image: ghcr.io/psalias2006/gpu-hot:latest
+    container_name: mointor
+    ports:
+      - "1312:1312"
+    depends_on:
+      llama-cpp:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 512M      # Hard limit: Container will be killed if exceeded
+        reservations:
+          memory: 512M      # Soft limit: Minimum memory guaranteed to the container
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+      
+volumes:
+  ollama_data:

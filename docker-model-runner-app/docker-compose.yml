@@ -11,7 +11,10 @@ services:
       fi"
     deploy:
       resources:
+        limits:
+          memory: 2G      # Hard limit: Container will be killed if exceeded
         reservations:
+          memory: 2G      # Soft limit: Minimum memory guaranteed to the container
           devices:
             - driver: nvidia
               count: all
@@ -24,35 +27,12 @@ services:
         model: ai/gemma4:E4B
     depends_on:
       - gpu-check
-  # 2. Runs Ollama server to serve the model (optional, can be replaced with llama.cpp directly)
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   container_name: ollama
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ollama_data:/root/.ollama
-  #   # Override command to pull the model on startup
-  #   entrypoint: /bin/sh
-  #   command: >
-  #     -c "ollama serve & 
-  #         sleep 5; 
-  #         ollama pull gemma4; 
-  #         wait"
-  #   # GPU support (optional but recommended for Gemma 4)
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: all
-  #             capabilities: [gpu]
   # 2. Runs llama.cpp server with the downloaded model
-  llama-cpp:
+  llm:
     # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
     # image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    image: local/llama.cpp:server-cuda13
-    container_name: llama-cpp
+    image: local/llm
+    container_name: llm
     depends_on:
       model-download:
         condition: service_completed_successfully
@@ -69,7 +49,10 @@ services:
       start_period: 40s
     deploy:
       resources:
+        limits:
+          memory: 4G      # Hard limit: Container will be killed if exceeded
         reservations:
+          memory: 4G      # Soft limit: Minimum memory guaranteed to the container
           devices:
             - driver: nvidia
               count: all
@@ -77,20 +60,6 @@ services:
     extra_hosts:
       # Makes host.docker.internal work on Linux too
       - "host.docker.internal:host-gateway"
-    # how to use --docker-repo, --host, --port, and --n-gpu-layers flags to run the server with the downloaded model
-    # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
-    # --docker-repo ai/gemma4:E4B
-    command: >
-      --docker-repo ai/gemma4:E4B
-      --model-url http://host.docker.internal:12434/engines/v1
-      --host 0.0.0.0
-      --port 8080
-      --n-gpu-layers 99
-      --reasoning-budget 4096
-      --reasoning-budget-message "... thinking budget exceeded, let's answer now."
-      --n-predict 4096
-      --ctx-size 65536
-      --slot-save-path /root/.cache/llama.cpp/slots 
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   mointor:
     image: ghcr.io/psalias2006/gpu-hot:latest
@@ -102,11 +71,11 @@ services:
         condition: service_started
     deploy:
       resources:
+        limits:
+          memory: 512M      # Hard limit: Container will be killed if exceeded
         reservations:
+          memory: 512M      # Soft limit: Minimum memory guaranteed to the container
           devices:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-      
-volumes:
-  ollama_data:

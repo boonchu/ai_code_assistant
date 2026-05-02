@@ -1,0 +1,2 @@
+- LoRA fine tune
+https://www.youtube.com/watch?v=cHpB0PTRx5A
