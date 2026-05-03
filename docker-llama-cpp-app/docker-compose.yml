@@ -24,7 +24,10 @@ services:
     # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
     # image: ghcr.io/ggml-org/llama.cpp:server-cuda
     image: local/llama.cpp:server-cuda13
+    restart: always
     container_name: llama-cpp
+    labels:
+      - "autoheal=true" # This tells autoheal to watch this container
     # depends_on:
     #   model-download:
     #     condition: service_completed_successfully
@@ -42,28 +45,27 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G      # Hard limit: Container will be killed if exceeded
+          memory: 6G      # Hard limit: Container will be killed if exceeded
         reservations:
-          memory: 4G      # Soft limit: Minimum memory guaranteed to the container
+          memory: 6G      # Soft limit: Minimum memory guaranteed to the container
           devices:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # extra_hosts:
-    #   # Makes host.docker.internal work on Linux too
-    #   - "host.docker.internal:host-gateway"
     # how to use --docker-repo, --host, --port, and --n-gpu-layers flags to run the server with the downloaded model
     # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
     # --model-url http://host.docker.internal:12434/engines/v1
+    # -reasoning-budget 4096
+    # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
     command: >
       --docker-repo ai/gemma4:E4B
       --host 0.0.0.0
       --port 8080
-      --n-gpu-layers 99
-      --reasoning-budget 4096
-      --reasoning-budget-message "... thinking budget exceeded, let's answer now."
-      --n-predict 4096
-      --ctx-size 65536
+      --n-gpu-layers 9999
+      --n-predict 10240
+      --ctx-size 256000
+      --cache-type-k q8_0
+      --cache-type-v q8_0
       --slot-save-path /root/.cache/llama.cpp/slots 
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   mointor:
@@ -84,3 +86,15 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+  # 4. Autoheal when container fails and need to restart
+  autoheal:
+    image: willfarrell/autoheal:latest
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          memory: 256M      # Hard limit: Container will be killed if exceeded
