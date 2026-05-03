@@ -24,13 +24,10 @@ services:
     # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
     # image: ghcr.io/ggml-org/llama.cpp:server-cuda
     image: local/llama.cpp:server-cuda13
-    restart: always
     container_name: llama-cpp
     labels:
-      - "autoheal=true" # This tells autoheal to watch this container
-    # depends_on:
-    #   model-download:
-    #     condition: service_completed_successfully
+      # This tells autoheal to watch this container
+      autoheal: true
     volumes:
       # Maps a local folder named 'llama_cache' to the container's cache path
       - ./llama_cache:/root/.cache/llama.cpp
@@ -68,9 +65,9 @@ services:
       --cache-type-v q8_0
       --slot-save-path /root/.cache/llama.cpp/slots 
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
-  mointor:
+  monitor:
     image: ghcr.io/psalias2006/gpu-hot:latest
-    container_name: mointor
+    container_name: monitor
     ports:
       - "1312:1312"
     depends_on:
@@ -89,9 +86,13 @@ services:
   # 4. Autoheal when container fails and need to restart
   autoheal:
     image: willfarrell/autoheal:latest
+    container_name: autoheal
     restart: always
+    depends_on:
+      llama-cpp:
+        condition: service_started
     environment:
-      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      AUTOHEAL_CONTAINER_LABEL: autoheal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
