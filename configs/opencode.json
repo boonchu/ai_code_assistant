@@ -21,5 +21,33 @@
         ]
       }
     }
+  },
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git#8ea39819eed74fe2a0338e71789f06b30e953041"
+  ],
+  "agent": {
+    "plan": {
+      "options": {},
+      "permission": {
+        "markdown_*": "allow",
+        "webfetch": "allow",
+        "websearch": "allow"
+      }
+    },
+    "build": {
+      "options": {},
+      "permission": {
+        "bash": "allow",
+        "apply_patch": "allow",
+        "edit": "allow",
+        "write": "allow"
+      }
+    },
+    "general": {
+      "options": {},
+      "permission": {
+        "bash": "allow"
+      }
+    }
   }
 }
