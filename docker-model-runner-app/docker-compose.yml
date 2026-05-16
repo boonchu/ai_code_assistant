@@ -20,45 +20,62 @@ services:
               count: all
               capabilities: [gpu]
   # 1. Downloads Gemma model from Docker Hub
-  model-download:
+  docker-runner:
     provider:
       type: model
       options:
         model: ai/gemma4:E4B
+        gpu: true
     depends_on:
       - gpu-check
-  # 2. Runs app server
-  app:
-    # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
-    # image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    image: local/llm
-    container_name: llm
-    depends_on:
-      model-download:
-        condition: service_completed_successfully
+  # 2. WebUI test
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: webui
     ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 4G      # Hard limit: Container will be killed if exceeded
-        reservations:
-          memory: 4G      # Soft limit: Minimum memory guaranteed to the container
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+      - "3000:8080"
+    environment:
+      # One stable URL from any container → host's Docker Model Runner
+      - OPENAI_API_BASE_URL=http://host.docker.internal:12434/engines/v1
+      - OPENAI_API_KEY=local-key
+      - WEBUI_NAME=Open WebUI - Local LLM via Docker Model Runner
     extra_hosts:
       # Makes host.docker.internal work on Linux too
       - "host.docker.internal:host-gateway"
-    networks:
-      - shared-network    
+    depends_on:
+      - docker-runner 
+  # 2. Runs app server
+  # app:
+  #   # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
+  #   # image: ghcr.io/ggml-org/llama.cpp:server-cuda
+  #   image: local/llm
+  #   container_name: llm
+  #   depends_on:
+  #     model-download:
+  #       condition: service_completed_successfully
+  #   ports:
+  #     - "8080:8080"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4G      # Hard limit: Container will be killed if exceeded
+  #       reservations:
+  #         memory: 4G      # Soft limit: Minimum memory guaranteed to the container
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+  #   extra_hosts:
+  #     # Makes host.docker.internal work on Linux too
+  #     - "host.docker.internal:host-gateway"
+  #   networks:
+  #     - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   mointor:
     image: ghcr.io/psalias2006/gpu-hot:latest
@@ -66,7 +83,7 @@ services:
     ports:
       - "1312:1312"
     depends_on:
-      llama-cpp:
+      webui:
         condition: service_started
     deploy:
       resources:
