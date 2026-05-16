@@ -26,7 +26,22 @@ sudo nvidia-ctk runtime configure --runtime=docker
 # Restart Docker
 sudo systemctl restart docker
 ```
-- Add Docker LLM model pulling support (model-runner from Docker Desktop)
+- When you can see nvidia-smi with good output, then environment setup has no issue.
+```
+$ docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 595.58.04              Driver Version: 596.21         CUDA Version: 13.2     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4070        On  |   00000000:01:00.0  On |                  N/A |
+|  0%   36C    P8              5W /  200W |    1210MiB /  12282MiB |      1%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+```
+- Add Docker Model Runner support
 ```
 # support docker model-runner plugin
 sudo apt-get update
@@ -52,6 +67,9 @@ Parameters:   7.52B
 Size:         4.74GiB
 Quantization: MOSTLY_Q4_K_M
 
+# enable model runner
+docker desktop enable model-runner --tcp 12434
+
 $ curl 'http://127.0.0.1:12434/v1/models/gemma4:E4B' -s | jq
 {
   "id": "docker.io/ai/gemma4:E4B",
@@ -65,66 +83,26 @@ $ curl 'http://127.0.0.1:12434/v1/models/gemma4:E4B' -s | jq
     "size": "4.74GiB"
   }
 }
-```
-- Review docker image types [here](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md) llama.cpp. When you can see nvidia-smi with good output, then environment setup has no issue.
-```
-$ docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 595.58.04              Driver Version: 596.21         CUDA Version: 13.2     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA GeForce RTX 4070        On  |   00000000:01:00.0  On |                  N/A |
-|  0%   36C    P8              5W /  200W |    1210MiB /  12282MiB |      1%      Default |
-|                                         |                        |                  N/A |
-+-----------------------------------------+------------------------+----------------------+
 
-docker run --gpus 1 ghcr.io/ggml-org/llama.cpp:server-cuda --port 8080 --host 0.0.0.0 -n 512 --n-gpu-layers 1 --docker-repo ai/gemma4:E4B
-
+# Send chat example to say hello.
+curl http://localhost:12434/engines/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "ai/gemma4:E4B",
+    "messages": [{"role": "user", "content": "Say hello"}],
+    "max_tokens": 20
+  }'
+```
 #### Before `running docker compose up -d`
-- Note that the current docker compose still need to tune llama.cpp to incorparate with model in docker model-runner. not sure yet if this is the right way to do so when use docker model with llama.cpp. 
-- Create directory llama_cache and set the Setgid Bit (For Shared Access)
-```
-mkdir -p llama_cache/slots
-chmod -R 2775 ./llama_cache
-sudo chgrp -R $(id -g) ./llama_cache
-```
-- When model download start, you should see this:
-```
-$ rg --files  llama_cache/
-
-llama_cache/ai_gemma4_E4B.gguf.downloadInProgress
-```
 - Watch logs in docker model.
 ```
 docker model logs -f
 ```
-#### Find best model to fit your local machine
+- Start `docker compose up -d`
+#### Use the [first example](https://github.com/tosun-si/football-agent-adk-gemma-dmr/tree/main#) 
 ```
-git clone git@github.com:AlexsJones/llmfit.git
-cd llmfit
-
-# pipe to jq to find best "fit" model for "llama.cpp".
-$ docker build -t llmfit-tui-image . && docker run --gpus all -it llmfit-tui-image | jq '.models[] | select(.runtime | contains("llama.cpp"))' | jq -r 
-
-  "name": "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
-  "notes": [
-    "Context capped at 8192 tokens for estimation (model supports up to 6553600; use --max-context to override)",
-    "GPU: model loaded into VRAM",
-    "MoE: all 64 experts loaded in VRAM (optimal)",
-    "Baseline estimated speed: 119.2 tok/s"
-  ],
-  "parameter_count": "15.7B",
-
-  "name": "Intel/Qwen3-Coder-Next-int4-AutoRound",
-  "notes": [
-    "Context capped at 8192 tokens for estimation (model supports up to 262144; use --max-context to override)",
-    "GPU: model loaded into VRAM",
-    "MoE: all 512 experts loaded in VRAM (optimal)",
-    "Best quantization for hardware: Q6_K (model default: Q4_K_M)",
-    "Baseline estimated speed: 139.4 tok/s"
-  ],
-  "parameter_count": "11.8B",
+git clone https://github.com/tosun-si/football-agent-adk-gemma-dmr.git
+direnv allow
+uv sync
+uv run adk web
 ```

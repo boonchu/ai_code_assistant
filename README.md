@@ -57,6 +57,10 @@ mkdir -p llama_cache/slots
 chmod -R 2775 ./llama_cache
 sudo chgrp -R $(id -g) ./llama_cache
 ```
+- Create docker network for connecting multiple docker projects.
+```
+docker network create ai-network
+```
 - When model download start, you should see this:
 ```
 $ rg --files  llama_cache/

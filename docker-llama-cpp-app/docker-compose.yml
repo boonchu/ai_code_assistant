@@ -30,7 +30,7 @@ services:
       autoheal: true
     volumes:
       # Maps a local folder named 'llama_cache' to the container's cache path
-      - ./llama_cache:/root/.cache/llama.cpp
+      - ../llama_cache:/root/.cache/llama.cpp
     ports:
       - "8080:8080"
     healthcheck:
@@ -54,16 +54,17 @@ services:
     # --model-url http://host.docker.internal:12434/engines/v1
     # -reasoning-budget 4096
     # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
+    # --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL
     command: >
       --docker-repo ai/gemma4:E4B
       --host 0.0.0.0
       --port 8080
-      --n-gpu-layers 9999
-      --n-predict 10240
-      --ctx-size 256000
-      --cache-type-k q8_0
-      --cache-type-v q8_0
+      --n-gpu-layers 99
+      --n-predict -1
+      -c 120000
       --slot-save-path /root/.cache/llama.cpp/slots 
+    networks:
+      - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   monitor:
     image: ghcr.io/psalias2006/gpu-hot:latest
@@ -99,3 +100,8 @@ services:
       resources:
         limits:
           memory: 256M      # Hard limit: Container will be killed if exceeded
+
+networks:
+  shared-network:
+    external: true
+    name: ai-network

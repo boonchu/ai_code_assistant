@@ -27,8 +27,8 @@ services:
         model: ai/gemma4:E4B
     depends_on:
       - gpu-check
-  # 2. Runs llama.cpp server with the downloaded model
-  llm:
+  # 2. Runs app server
+  app:
     # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
     # image: ghcr.io/ggml-org/llama.cpp:server-cuda
     image: local/llm
@@ -36,9 +36,6 @@ services:
     depends_on:
       model-download:
         condition: service_completed_successfully
-    volumes:
-      # Maps a local folder named 'llama_cache' to the container's cache path
-      - ./llama_cache:/root/.cache/llama.cpp
     ports:
       - "8080:8080"
     healthcheck:
@@ -60,6 +57,8 @@ services:
     extra_hosts:
       # Makes host.docker.internal work on Linux too
       - "host.docker.internal:host-gateway"
+    networks:
+      - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
   mointor:
     image: ghcr.io/psalias2006/gpu-hot:latest
@@ -79,3 +78,8 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
+networks:
+  shared-network:
+    external: true
+    name: ai-network
