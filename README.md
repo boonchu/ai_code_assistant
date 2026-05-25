@@ -44,18 +44,13 @@ $ docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
 
 docker run --gpus 1 ghcr.io/ggml-org/llama.cpp:server-cuda --port 8080 --host 0.0.0.0 -n 512 --n-gpu-layers 1 --docker-repo ai/gemma4:E4B
 ```
-- [How to build it locally](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md#building-docker-locally) 
-```
-git clone https://github.com/ggml-org/llama.cpp.git
-docker build -t local/llama.cpp:server-cuda12 --target server -f .devops/cuda.Dockerfile .
-```
 #### Before `running docker compose up -d`
 - Note that the current docker compose still need to tune llama.cpp to incorparate with model in docker model-runner. not sure yet if this is the right way to do so when use docker model with llama.cpp. 
-- Create directory llama_cache and set the Setgid Bit (For Shared Access)
+- Create directory models_cache and set the Setgid Bit (For Shared Access)
 ```
-mkdir -p llama_cache/slots
-chmod -R 2775 ./llama_cache
-sudo chgrp -R $(id -g) ./llama_cache
+mkdir -p models_cache/slots
+chmod -R 2775 ./models_cache
+sudo chgrp -R $(id -g) ./models_cache
 ```
 - Create docker network for connecting multiple docker projects.
 ```
@@ -63,9 +58,9 @@ docker network create ai-network
 ```
 - When model download start, you should see this:
 ```
-$ rg --files  llama_cache/
+$ rg --files  models_cache/
 
-llama_cache/ai_gemma4_E4B.gguf.downloadInProgress
+models_cache/ai_gemma4_E4B.gguf.downloadInProgress
 ```
 
 #### Find best model to fit your local machine

@@ -22,15 +22,27 @@ services:
   # 2. Runs llama.cpp server with the downloaded model
   llama-cpp:
     # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
-    # image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    image: local/llama.cpp:server-cuda13
+    platform: linux/amd64
+    image: llama-cpp
     container_name: llama-cpp
+    build:
+      context: ./llama.cpp
+      dockerfile: .devops/cuda.Dockerfile
+      # Adjust CUDA architectures to match your GPU(s):
+      #   75 = Turing (RTX 2000),
+      #   80 = Ampere (A100/RTX 3000),
+      #   86 = Ampere (RTX 3000 consumer),
+      #   89 = Ada (RTX 4000),
+      #   90 = Hopper (H100)
+      args:
+        CUDA_VERSION: "13.2.1"
+        CUDA_DOCKER_ARCH: "89"
     labels:
       # This tells autoheal to watch this container
       autoheal: true
     volumes:
-      # Maps a local folder named 'llama_cache' to the container's cache path
-      - ../llama_cache:/root/.cache/llama.cpp
+      # Maps a local folder named 'models_cache' to the container's cache path
+      - ../models_cache:/root/.cache/llama.cpp
     ports:
       - "8080:8080"
     healthcheck:
@@ -39,6 +51,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    environment:
+      - LC_ALL=C.utf8
     deploy:
       resources:
         limits:
@@ -55,13 +69,18 @@ services:
     # -reasoning-budget 4096
     # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
     # --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL
+    # --docker-repo ai/gemma4:E4B
+    # --top-k 40 --repeat-penalty 1.1 --top-p 0.95 --min-p 0.05
     command: >
-      --docker-repo ai/gemma4:E4B
+      --lv 1
+      --docker-repo hf.co/Qwen/Qwen3.6-35B-A3B
       --host 0.0.0.0
       --port 8080
       --n-gpu-layers 99
-      --n-predict -1
-      -c 120000
+      -fa on
+      -cc 8192
+      --spec-type draft-mtp
+      --spec-draft-n-max 2
       --slot-save-path /root/.cache/llama.cpp/slots 
     networks:
       - shared-network    

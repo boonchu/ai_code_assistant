@@ -27,8 +27,8 @@ services:
       # This tells autoheal to watch this container
       autoheal: true
     volumes:
-      # Maps a local folder named 'llama_cache' to the container's cache path
-      - ../llama_cache:/root/.cache
+      # Maps a local folder named 'models_cache' to the container's cache path
+      - ../models_cache:/root/.cache
     ports:
       - "8080:8000"
     environment:

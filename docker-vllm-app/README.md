@@ -1,8 +1,8 @@
 #### Add HF Download folder
 ```
-mkdir -p llama_cache/huggingface/hub
-chmod -R 2775 ./llama_cache
-sudo chgrp -R $(id -g) ./llama_cache
+mkdir -p models_cache/huggingface/hub
+chmod -R 2775 ./models_cache
+sudo chgrp -R $(id -g) ./models_cache
 ```
 
 #### Avoid to get models from inside docker, Download HF models with 'hf' cli
@@ -11,12 +11,12 @@ export HF_TOKEN=<TOKEN>
 export HF_HUB_DISABLE_XET=1
 export HF_HUB_DOWNLOAD_TIMEOUT=300
 hf models info Qwen/Qwen3.5-4B
-hf download Qwen/Qwen3.5-4B --cache-dir ../llama_cache/huggingface/hub/
+hf download Qwen/Qwen3.5-4B --cache-dir ../models_cache/huggingface/hub/
 ```
 
 #### Checking Cache from HF
 ```
-hf cache list --cache-dir ../llama_cache/huggingface/hub/
+hf cache list --cache-dir ../models_cache/huggingface/hub/
 
 ID                              SIZE LAST_ACCESSED     LAST_MODIFIED     REFS
 ----------------------------- ------ ----------------- ----------------- ----
