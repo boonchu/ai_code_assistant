@@ -1,0 +1,32 @@
+{%- if messages[0]['role'] == 'system' %}
+    {%- set system_message = messages[0]['content'] | trim %}
+    {%- set loop_messages = messages[1:] %}
+{%- else %}
+    {%- set system_message = none %}
+    {%- set loop_messages = messages %}
+{%- endif %}
+
+{#- Output System Prompt if present, handling trailing newline logic safely -#}
+{%- if system_message is not none %}
+    {{- '<|im_start|>system\n' + system_message + '<|im_end|>\n' }}
+{%- endif %}
+
+{#- Loop over the remaining dialogue turns -#}
+{%- for message in loop_messages %}
+    {%- set role = message['role'] %}
+    {%- set content = message['content'] | trim %}
+
+    {#- Detect and strip raw reasoning text if OpenCode isn't hiding it -#}
+    {%- if '<think>' in content and '</think>' in content %}
+        {%- set parts = content.split('</think>') %}
+        {%- set clean_answer = parts[1] | trim %}
+        {{- '<|im_start|>' + role + '\n' + clean_answer + '<|im_end|>\n' }}
+    {%- else %}
+        {{- '<|im_start|>' + role + '\n' + content + '<|im_end|>\n' }}
+    {%- endif %}
+{%- endfor %}
+
+{#- Generation prompt injection for local engines -#}
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+{%- endif %}

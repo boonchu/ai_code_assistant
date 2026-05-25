@@ -1,0 +1,59 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "llama.cpp": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LLAMA.CPP (local)",
+      "models": {
+        "gemma4:E4B": {
+          "name": "ai/gemma4:E4B"
+        },
+        "qwen3.6:35B-A3B-UD-Q4_K_M": {
+          "name": "ai/qwen3.6:35B-A3B-UD-Q4_K_M"
+        },
+        "qwen3.5:9B-UD-Q4_K_XL": {
+	  "name": "ai/qwen3.5:9B-UD-Q4_K_XL"
+	}
+      },
+      "options": {
+        "baseURL": "http://127.0.0.1:8080/v1",
+        "toolParser": [
+          {
+            "type": "raw-function-call"
+          },
+          {
+            "type": "json"
+          }
+        ]
+      }
+    }
+  },
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git#8ea39819eed74fe2a0338e71789f06b30e953041"
+  ],
+  "agent": {
+    "plan": {
+      "options": {},
+      "permission": {
+        "markdown_*": "allow",
+        "webfetch": "allow",
+        "websearch": "allow"
+      }
+    },
+    "build": {
+      "options": {},
+      "permission": {
+        "bash": "allow",
+        "apply_patch": "allow",
+        "edit": "allow",
+        "write": "allow"
+      }
+    },
+    "general": {
+      "options": {},
+      "permission": {
+        "bash": "allow"
+      }
+    }
+  }
+}

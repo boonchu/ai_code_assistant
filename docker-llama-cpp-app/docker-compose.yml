@@ -35,7 +35,7 @@ services:
       #   89 = Ada (RTX 4000),
       #   90 = Hopper (H100)
       args:
-        CUDA_VERSION: "13.2.1"
+        CUDA_VERSION: "13.0.2"
         CUDA_DOCKER_ARCH: "89"
     labels:
       # This tells autoheal to watch this container
@@ -49,8 +49,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 10
+      start_period: 3600s
     environment:
       - LC_ALL=C.utf8
     deploy:
@@ -68,20 +68,33 @@ services:
     # --model-url http://host.docker.internal:12434/engines/v1
     # -reasoning-budget 4096
     # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
-    # --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL
     # --docker-repo ai/gemma4:E4B
-    # --top-k 40 --repeat-penalty 1.1 --top-p 0.95 --min-p 0.05
+    # --docker-repo ai/ministral3:8B-Q4_K_M
+    # --docker-repo ai/qwen3.6:35B-A3B-UD-Q4_K_M
     command: >
-      --lv 1
-      --docker-repo hf.co/Qwen/Qwen3.6-35B-A3B
+      --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL
       --host 0.0.0.0
       --port 8080
-      --n-gpu-layers 99
-      -fa on
-      -cc 8192
-      --spec-type draft-mtp
-      --spec-draft-n-max 2
-      --slot-save-path /root/.cache/llama.cpp/slots 
+      --n-gpu-layers 999
+      --n-cpu-moe 40
+      --no-webui
+      --parallel 1
+      -fit off
+      -b 4096
+      -ub 512
+      --dry-multiplier 0.8 
+      --samplers "top_k;top_p;min_p;temperature;dry;typ_p;xtc"
+      --cache-type-k q8_0 
+      --cache-type-v q8_0
+      --flash-attn on
+      --no-context-shift
+      --jinja
+      --chat-template-file /root/.cache/llama.cpp/chat_template-v19.jinja
+      --chat-template-kwargs '{"preserve_thinking": false}'
+      --top-k 40
+      --repeat-penalty 1.1
+      --top-p 0.95
+      --min-p 0.05
     networks:
       - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance

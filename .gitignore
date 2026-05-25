@@ -1,1 +1,3 @@
 models_cache/*
+!models_cache/chat_template-v19.jinja
+!.gitignore
