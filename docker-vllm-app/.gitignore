@@ -27,3 +27,5 @@ yarn.lock
 
 llama.cpp/
 llama_cache/
+
+.env
