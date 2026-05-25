@@ -1,0 +1,9 @@
+.venv
+diagrams
+__pycache__
+*.pyc
+.git
+.DS_Store
+.envrc
+webapp/
+*.md

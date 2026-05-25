@@ -19,26 +19,30 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-  # 2. Runs llama.cpp server with the downloaded model
-  llama-cpp:
-    # if downloading the image from Docker Hub, use the line below. If building locally, use the line after that
-    # image: ghcr.io/ggml-org/llama.cpp:server-cuda
-    image: local/llama.cpp:server-cuda13
-    container_name: llama-cpp
+  # 2. Runs vllm server with the downloaded model
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
     labels:
       # This tells autoheal to watch this container
       autoheal: true
     volumes:
       # Maps a local folder named 'llama_cache' to the container's cache path
-      - ../llama_cache:/root/.cache/llama.cpp
+      - ../llama_cache:/root/.cache
     ports:
-      - "8080:8080"
+      - "8080:8000"
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+      - VLLM_LOGGING_LEVEL=${VLLM_LOGGING_LEVEL} # Forces vLLM to output detailed step-by-step lifecycles
+      - CUDA_LAUNCH_BLOCKING=1   # Forces CUDA to report errors instantly instead of asynchronously
+      - HF_HUB_DISABLE_XET=1          # Disables erratic Xet streams for stable HTTP
+      - HF_HUB_DOWNLOAD_TIMEOUT=300   # Extends timeout to 5 mins for massive Q4 shards
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 100
+      start_period: 120s
     deploy:
       resources:
         limits:
@@ -49,20 +53,20 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # how to use --docker-repo, --host, --port, and --n-gpu-layers flags to run the server with the downloaded model
-    # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
-    # --model-url http://host.docker.internal:12434/engines/v1
-    # -reasoning-budget 4096
-    # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
-    # --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL
+    entrypoint: ["vllm", "serve", "Qwen/Qwen3.5-4B"]
     command: >
-      --docker-repo ai/gemma4:E4B
-      --host 0.0.0.0
-      --port 8080
-      --n-gpu-layers 99
-      --n-predict -1
-      -c 120000
-      --slot-save-path /root/.cache/llama.cpp/slots 
+      --reasoning-parser qwen3
+      --enable-auto-tool-choice 
+      --tool-call-parser qwen3_coder   
+      --max-model-len 11000
+      --max-num-batched-tokens 11000
+      --max-num-seqs  1               
+      --gpu-memory-utilization 0.85
+      --enforce-eager
+      --language-model-only
+      --trust-remote-code
+      --chat-template="{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
+
     networks:
       - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
@@ -72,7 +76,7 @@ services:
     ports:
       - "1312:1312"
     depends_on:
-      llama-cpp:
+      vllm:
         condition: service_started
     deploy:
       resources:
@@ -90,7 +94,7 @@ services:
     container_name: autoheal
     restart: always
     depends_on:
-      llama-cpp:
+      vllm:
         condition: service_started
     environment:
       AUTOHEAL_CONTAINER_LABEL: autoheal

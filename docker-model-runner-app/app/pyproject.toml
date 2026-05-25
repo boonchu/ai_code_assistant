@@ -1,0 +1,5 @@
+[project]
+name = "agent"
+version = "0.1.0"
+description = "AI Agent with Gemma 4 via Docker Model Runner"
+requires-python = ">=3.13"
