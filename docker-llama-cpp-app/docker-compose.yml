@@ -63,11 +63,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    # how to use --docker-repo, --host, --port, and --n-gpu-layers flags to run the server with the downloaded model
     # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
-    # --model-url http://host.docker.internal:12434/engines/v1
-    # -reasoning-budget 4096
-    # --reasoning-budget-message "... thinking budget exceeded, let's answer now."
     # --docker-repo ai/gemma4:E4B
     # --docker-repo ai/ministral3:8B-Q4_K_M
     # --docker-repo ai/qwen3.6:35B-A3B-UD-Q4_K_M
@@ -80,8 +76,8 @@ services:
       --no-webui
       --parallel 1
       -fit off
-      -b 4096
-      -ub 512
+      --batch-size 4096
+      --ubatch-size 512
       --dry-multiplier 0.8 
       --samplers "top_k;top_p;min_p;temperature;dry;typ_p;xtc"
       --cache-type-k q8_0 
