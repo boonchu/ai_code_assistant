@@ -1,49 +1,64 @@
-#### Spending weekends to explore how AI assist me coding...
+### Spending weekends to explore how AI assist me coding...
 
-### Setup `docker-llama-cpp-app`
-- Use Linux WSL2 on Windows
-- Ensure to have GPU, project has tested with 12GB RTX-4070
-- Apply `Continue` or `Cline` extension from vscode and have settings to use gemma4:E4B
-    - `Continue` is better since it pass through my prompt to service.
-- Can monitor GPU when docker services started, http://localhost:1312
-- Ensure [Nvidia Tool Kit](https://oneuptime.com/blog/post/2026-01-16-docker-nvidia-gpu-ai-ml/view#ubuntu-debian) installed
+#### Setup `docker-llama-cpp-app`
+- Use Linux WSL2 on Windows.
+- Have already setup WSL2 Linux Docker service.
+- Must [Read this first](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#cuda-support-for-wsl-2)
 ```
-# Add NVIDIA package repository
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
-  sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+Once a Windows NVIDIA GPU driver is installed on the system, CUDA becomes available within WSL 2. The CUDA driver installed on Windows host will be stubbed inside the WSL 2 as libcuda.so, therefore users must not install any NVIDIA GPU Linux driver within WSL 2. One has to be very careful here as the default CUDA Toolkit comes packaged with a driver, and it is easy to overwrite the WSL 2 NVIDIA driver with the default installation. We recommend developers to use a separate CUDA Toolkit for WSL 2 (Ubuntu) available from the CUDA Toolkit Downloads page to avoid this overwriting. This WSL-Ubuntu CUDA toolkit installer will not overwrite the NVIDIA driver that was already mapped into the WSL 2 environment
 
-curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+Check latest version from web page.
 
-# Install the toolkit
+wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
 sudo apt-get update
-sudo apt-get install -y nvidia-container-toolkit
+sudo apt-get -y install cuda-toolkit-13-3
+```
 
-# Configure Docker to use NVIDIA runtime
+- Ensure to have Nvidia GPU, project has tested with 12GB RTX-4070
+- Ensure [Nvidia Tool Kit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed.
+```
+sudo apt-get update && sudo apt-get install -y --no-install-recommends \
+   ca-certificates \
+   curl \
+   gnupg2
+
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt-get update
+
+export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.19.1-1
+  sudo apt-get install -y \
+      nvidia-container-toolkit=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+      nvidia-container-toolkit-base=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+      libnvidia-container-tools=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+      libnvidia-container1=${NVIDIA_CONTAINER_TOOLKIT_VERSION}
+
 sudo nvidia-ctk runtime configure --runtime=docker
 
-# Restart Docker
 sudo systemctl restart docker
 ```
 
+- Running a sample workload with docker
+```
+sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+```
+
+
+#### Setup extension with vscode
+- Apply `Continue` or `Cline` extension from vscode and have settings to use gemma4:E4B
+    - `Continue` is better since it pass through my prompt to service.
+- Can monitor GPU when docker services started, http://localhost:1312
 - Review docker image types [here](https://github.com/ggml-org/llama.cpp/blob/master/docs/docker.md) llama.cpp. When you can see nvidia-smi with good output, then environment setup has no issue.
 ```
-$ docker run --rm -it --gpus all nvidia/cuda:13.0.2-devel-ubuntu24.04 nvidia-smi
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 595.58.04              Driver Version: 596.21         CUDA Version: 13.2     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA GeForce RTX 4070        On  |   00000000:01:00.0  On |                  N/A |
-|  0%   36C    P8              5W /  200W |    1210MiB /  12282MiB |      1%      Default |
-|                                         |                        |                  N/A |
-+-----------------------------------------+------------------------+----------------------+
-
 docker run --gpus 1 ghcr.io/ggml-org/llama.cpp:server-cuda --port 8080 --host 0.0.0.0 -n 512 --n-gpu-layers 1 --docker-repo ai/gemma4:E4B
 ```
+
 #### Before `running docker compose up -d`
 - Note that the current docker compose still need to tune llama.cpp to incorparate with model in docker model-runner. not sure yet if this is the right way to do so when use docker model with llama.cpp. 
 - Create directory models_cache and set the Setgid Bit (For Shared Access)
