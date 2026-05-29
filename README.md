@@ -40,6 +40,11 @@ export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.19.1-1
 
 sudo nvidia-ctk runtime configure --runtime=docker
 
+# should have this output first before restart docker.
+# $ nvidia-ctk cdi list
+# INFO[0000] Found 1 CDI devices
+# nvidia.com/gpu=all
+
 sudo systemctl restart docker
 ```
 
