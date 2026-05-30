@@ -63,11 +63,14 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    # llama.cpp project
     # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md?plain=1#L101
-    # --docker-repo ai/gemma4:E4B
+    # list of models
+    # --docker-repo ai/gemma4:E4B                 # okay for multimodals
     # --docker-repo ai/ministral3:8B-Q4_K_M
-    # --docker-repo ai/qwen3.6:35B-A3B-UD-Q4_K_M
-    # when needs jinja.
+    # --docker-repo ai/qwen3.5:9B-UD-Q4_K_XL      # best for coder
+    # --docker-repo ai/qwen3.6:35B-A3B-UD-Q4_K_M  # too large. could work with RTX-5090 24GB?
+    # jinja template
     # --jinja
     # --chat-template-file /root/.cache/llama.cpp/chat_template-v19.jinja
     # --chat-template-kwargs '{"preserve_thinking": true}'
@@ -86,7 +89,7 @@ services:
       --repeat-penalty 1.1
       --top-p 0.95
       --min-p 0.05
-      --n-gpu-layers 99
+      --n-gpu-layers 120
       --no-mmap
       --batch-size 4096
       --ubatch-size 512
@@ -95,6 +98,9 @@ services:
       --flash-attn on
       --cache-type-k q4_0 
       --cache-type-v q4_0
+      --ctx-checkpoints 10
+      -t 8
+      -tb 8
     networks:
       - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
