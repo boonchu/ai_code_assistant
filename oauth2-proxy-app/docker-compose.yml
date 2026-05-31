@@ -1,0 +1,42 @@
+services:
+  ai-proxy:
+    container_name: ai-proxy
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Required - Generate secure secrets for production
+      - JWT_SECRET=${JWT_SECRET:-fallback-change-in-production}
+      - API_KEY_SECRET=${API_KEY_SECRET:-fallback-change-in-production}
+
+      # Optional - Backend configuration
+      - BACKEND_URL=${BACKEND_URL:-http://llama-cpp:8080}
+
+      # Optional - Token and password configuration
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      - BCRYPT_ROUNDS=${BCRYPT_ROUNDS:-12}
+
+      # Optional - Rate limiting
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-60}
+
+      # Optional - CORS configuration
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+
+      # Optional - Default timeout
+      - DEFAULT_TIMEOUT=${DEFAULT_TIMEOUT:-5.0}
+
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
+    name: ai-network

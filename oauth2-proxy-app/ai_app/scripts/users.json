@@ -1,0 +1,9 @@
+{
+  "view": {
+    "password": "view123"
+  },
+  "demo": {
+    "password": "demo123"
+  },
+  "api_key": "your-super-secret-api-key-change-in-production"
+}
