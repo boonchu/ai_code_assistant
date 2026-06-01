@@ -14,7 +14,7 @@
       "api": "openai-completions",
       "apiKey": "vllm",
       "models": [
-        { "id": "Qwen/Qwen3.5-4B", "contextWindow": 8192, "maxTokens": 4096 }
+        { "id": "mistralai/Mistral-7B-v0.1", "contextWindow": 8192, "maxTokens": 4096 }
       ]
     },
     "llama-cpp": {
@@ -23,7 +23,8 @@
       "apiKey": "none",
       "models": [
         { "id": "ai/gemma4:E4B" },
-        { "id": "ai/qwen3.5:9B-UD-Q4_K_XL", "contextWindow": 8192, "maxTokens": 4096 }
+        { "id": "ai/qwen3.5:9B-UD-Q4_K_XL", "contextWindow": 8192, "maxTokens": 4096 },
+        { "id": "ai/qwen3.6:35B-A3B-UD-Q4_K_M", "contextWindow": 8192, "maxTokens": 4096 }
       ]
     }
   }

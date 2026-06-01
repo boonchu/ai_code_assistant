@@ -29,3 +29,4 @@ llama.cpp/
 llama_cache/
 
 .env
+.envrc

@@ -1,0 +1,13 @@
+{
+  "lastChangelogVersion": "0.77.0",
+  "defaultProvider": "llama-cpp",
+  "defaultModel": "ai/qwen3.5:9B-UD-Q4_K_XL",
+  "packages": [
+    "npm:pi-web-access",
+    "npm:pi-subagents"
+  ],
+  "agent": {
+    "compactionThreshold": 7168,
+    "maxCompactionTokens": 2048
+  }
+}

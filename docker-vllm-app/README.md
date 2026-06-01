@@ -1,7 +1,7 @@
 #### Add HF Download folder
 ```
 mkdir -p models_cache/huggingface/hub
-chmod -R 2775 ./models_cache
+sudo chmod -R 2775 ./models_cache
 sudo chgrp -R $(id -g) ./models_cache
 ```
 
@@ -10,20 +10,15 @@ sudo chgrp -R $(id -g) ./models_cache
 export HF_TOKEN=<TOKEN>
 export HF_HUB_DISABLE_XET=1
 export HF_HUB_DOWNLOAD_TIMEOUT=300
-hf models info Qwen/Qwen3.5-4B
-hf download Qwen/Qwen3.5-4B --cache-dir ../models_cache/huggingface/hub/
+
+# https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
+hf download mistralai/Mistral-7B-v0.1  --cache-dir ../models_cache/huggingface/hub/
+hf model info mistralai/Mistral-7B-v0.1
 ```
 
 #### Checking Cache from HF
 ```
 hf cache list --cache-dir ../models_cache/huggingface/hub/
-
-ID                              SIZE LAST_ACCESSED     LAST_MODIFIED     REFS
------------------------------ ------ ----------------- ----------------- ----
-model/Qwen/Qwen3.5-4B           9.3G 22 minutes ago    1 minute ago      main
-model/z-lab/Qwen3.5-4B-DFlash 424.0K a few seconds ago a few seconds ago main
-
-Found 2 repo(s) for a total of 2 revision(s) and 9.3G on disk.
 ```
 
 #### Testing 
@@ -57,7 +52,7 @@ cat ~/.pi/agent/models.json
       "api": "openai-completions",
       "apiKey": "vllm",
       "models": [
-        { "id": "Qwen/Qwen3.5-4B" }
+        { "id": "mistralai/Mistral-7B-v0.1" }
       ]
     }
   }
@@ -66,8 +61,6 @@ cat ~/.pi/agent/models.json
 cat ~/.pi/agent/settings.json
 {
   "lastChangelogVersion": "0.75.5",
-  "defaultProvider": "vllm",
-  "defaultModel": "Qwen/Qwen3.5-4B",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-subagents"
