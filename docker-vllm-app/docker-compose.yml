@@ -37,6 +37,8 @@ services:
       - CUDA_LAUNCH_BLOCKING=1   # Forces CUDA to report errors instantly instead of asynchronously
       - HF_HUB_DISABLE_XET=1          # Disables erratic Xet streams for stable HTTP
       - HF_HUB_DOWNLOAD_TIMEOUT=300   # Extends timeout to 5 mins for massive Q4 shards
+      - VLLM_TEMPERATURE=0.8
+      - VLLM_REPETITION_PENALTY=1.0
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -53,21 +55,19 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    entrypoint: ["vllm", "serve", "Qwen/Qwen3.5-4B"]
+    # entrypoint: ["vllm", "serve", "unsloth/DeepSeek-R1-Distill-Qwen-7B-unsloth-bnb-4bit"]
+    # command: >
+    #   --quantization bitsandbytes 
+    entrypoint: ["vllm", "serve", "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ"]
     command: >
-      --reasoning-parser qwen3
-      --enable-auto-tool-choice 
-      --tool-call-parser qwen3_coder   
-      --max-model-len 10240
-      --max-num-batched-tokens 1024
-      --max-num-seqs  1               
-      --gpu-memory-utilization 0.90
-      --enable-chunked-prefill
+      --quantization awq_marlin
+      --gpu-memory-utilization 0.85
+      --max-model-len 16384
+      --kv-cache-dtype fp8
       --enforce-eager
-      --language-model-only
-      --trust-remote-code
-      --chat-template="{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
-
+      --enable-auto-tool-choice
+      --tool-call-parser qwen3_coder
+      --enable-prefix-caching
     networks:
       - shared-network    
   # 3. Runs the monitoring dashboard to visualize GPU usage and model performance
